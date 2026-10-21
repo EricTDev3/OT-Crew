@@ -1,8 +1,11 @@
 import Image from "next/image";
 import { prisma } from "@/lib/prisma";
 import { Suspense } from "react";
+import { connection } from "next/server";
 
 const TestMessage = async () => {
+  await connection();
+
   const findUser = await prisma.test.findFirst({
     where: {
       id: 1,
