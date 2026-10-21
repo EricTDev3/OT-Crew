@@ -1,4 +1,20 @@
 import Image from "next/image";
+import { prisma } from "@/lib/prisma";
+import { Suspense } from "react";
+
+const TestMessage = async () => {
+  const findUser = await prisma.test.findFirst({
+    where: {
+      id: 1,
+    },
+  });
+
+  return (
+    <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
+      {findUser?.text ?? "No rows yet"}
+    </h1>
+  );
+};
 
 export default function Home() {
   return (
@@ -13,13 +29,9 @@ export default function Home() {
           priority
         />
         <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            HELLO WORLD!!!, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
+          <Suspense fallback={<p>Loading...</p>}>
+            <TestMessage />
+          </Suspense>
           <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
             Looking for a starting point or more instructions? Head over to{" "}
             <a
