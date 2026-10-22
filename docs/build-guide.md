@@ -31,48 +31,48 @@ OT Crew lets a company fill overtime without calling people one by one: a manage
 
 The MVP proves the core loop (post, answer, select), version 1 is the portfolio target, and everything else waits. If time is short, steps 1 to 4 of the build plan plus a README are a presentable minimum.
 
-| Feature | Release |
-| --- | --- |
-| Sign up and log in (Clerk) | MVP |
-| Company admin and employee roles | MVP |
-| Create and rename departments | MVP |
-| Invite employees and assign departments | MVP |
-| Post an OT request | MVP |
-| Employee answers Available or Decline (mobile web) | MVP |
-| Admin sees volunteers and selects the crew | MVP |
-| Employee status: Waiting, Selected, Not selected | MVP |
-| Request closes at its start time | MVP |
-| Company scoping tests | MVP |
+| Feature                                                  | Release   |
+| -------------------------------------------------------- | --------- |
+| Sign up and log in (Clerk)                               | MVP       |
+| Company admin and employee roles                         | MVP       |
+| Create and rename departments                            | MVP       |
+| Invite employees and assign departments                  | MVP       |
+| Post an OT request                                       | MVP       |
+| Employee answers Available or Decline (mobile web)       | MVP       |
+| Admin sees volunteers and selects the crew               | MVP       |
+| Employee status: Waiting, Selected, Not selected         | MVP       |
+| Request closes at its start time                         | MVP       |
+| Company scoping tests                                    | MVP       |
 | Edit a request, with reconfirm on a date or hours change | Version 1 |
-| Close and reopen before the start time | Version 1 |
-| Available for part (hours) | Version 1 |
-| In-app alerts | Version 1 |
-| Conflict warning and a stale-edit check for two admins | Version 1 |
-| Remove people, resend or cancel invites | Version 1 |
-| OT records by week, month, or quarter | Version 1 |
-| Empty states, demo data, README, architecture diagram | Version 1 |
-| Hours-worked corrections | Later |
-| Account page polish and password reset screens | Later |
-| Platform admin dashboard and company management | Later |
-| Department lead screens | Later |
-| Playwright test, live updates, push notifications | Later |
+| Close and reopen before the start time                   | Version 1 |
+| Available for part (hours)                               | Version 1 |
+| In-app alerts                                            | Version 1 |
+| Conflict warning and a stale-edit check for two admins   | Version 1 |
+| Remove people, resend or cancel invites                  | Version 1 |
+| OT records by week, month, or quarter                    | Version 1 |
+| Empty states, demo data, README, architecture diagram    | Version 1 |
+| Hours-worked corrections                                 | Later     |
+| Account page polish and password reset screens           | Later     |
+| Platform admin dashboard and company management          | Later     |
+| Department lead screens                                  | Later     |
+| Playwright test, live updates, push notifications        | Later     |
 
 ## Tech stack
 
 Ten choices are settled and approved by the mentor. Next.js handles both screens and server logic, so there is no separate Express API.
 
-| Category | Tool | Notes |
-| --- | --- | --- |
-| Language | TypeScript | Shared types across the app |
-| Frontend | Next.js (React) | Learned at the bootcamp |
-| Backend | Next.js Route Handlers and Server Actions | Replaces the planned Express API |
-| Hosting (frontend and backend) | Vercel | Deploys from GitHub on every push |
-| Database | PostgreSQL | Relational data, constraints, transactions |
-| Database hosting | Neon | Managed Postgres |
-| Database access (ORM) | Prisma | Typed queries and tracked migrations |
-| Auth | Clerk | Passwords, email code at sign-up, sessions, invites |
-| Testing | Vitest | Rules and components; Playwright optional later |
-| CI and delivery | GitHub Actions, Docker | Docker runs Postgres locally |
+| Category                       | Tool                                      | Notes                                               |
+| ------------------------------ | ----------------------------------------- | --------------------------------------------------- |
+| Language                       | TypeScript                                | Shared types across the app                         |
+| Frontend                       | Next.js (React)                           | Learned at the bootcamp                             |
+| Backend                        | Next.js Route Handlers and Server Actions | Replaces the planned Express API                    |
+| Hosting (frontend and backend) | Vercel                                    | Deploys from GitHub on every push                   |
+| Database                       | PostgreSQL                                | Relational data, constraints, transactions          |
+| Database hosting               | Neon                                      | Managed Postgres                                    |
+| Database access (ORM)          | Prisma                                    | Typed queries and tracked migrations                |
+| Auth                           | Clerk                                     | Passwords, email code at sign-up, sessions, invites |
+| Testing                        | Vitest                                    | Rules and components; Playwright optional later     |
+| CI and delivery                | GitHub Actions, Docker                    | Docker runs Postgres locally                        |
 
 **Working assumptions.** Request status (open or closed) is calculated from the start time when a screen loads, so no scheduled job is needed. Screens refresh every few seconds instead of using WebSockets, because Vercel functions cannot hold connections open. Zod is assumed for validating incoming data. Clerk sends the sign-up and invite emails.
 
@@ -80,13 +80,13 @@ Ten choices are settled and approved by the mentor. Next.js handles both screens
 
 Four roles and the public pages are designed on five private canvases; version 1 builds the company admin and employee parts. The canvases are private claude.ai links and cannot be opened by Claude Code.
 
-| Role or area | What they do | Device | Release | Designs |
-| --- | --- | --- | --- | --- |
-| Company admin | Sets up departments, invites people, posts requests, selects crews, closes and reopens, reviews OT records | Computer | Version 1 | Company admin canvas, about 22 screens |
-| Employee | Sees requests for their departments, answers, checks status and alerts | Phone (mobile website) | MVP and version 1 | Employee canvas, 10 screens |
-| Department lead | Runs requests and crews for their own departments, corrects hours, removes people from a department | Computer | Later | Lead canvas, about 20 screens |
-| Platform admin | Creates, edits, and deletes company accounts; sees basic company details only | Computer | Later | Platform admin canvas, 6 screens |
-| Public pages | Landing page, create account, email code, set password, log in, forgot password | Both | MVP | Public site canvas, about 10 screens |
+| Role or area    | What they do                                                                                               | Device                 | Release           | Designs                                |
+| --------------- | ---------------------------------------------------------------------------------------------------------- | ---------------------- | ----------------- | -------------------------------------- |
+| Company admin   | Sets up departments, invites people, posts requests, selects crews, closes and reopens, reviews OT records | Computer               | Version 1         | Company admin canvas, about 22 screens |
+| Employee        | Sees requests for their departments, answers, checks status and alerts                                     | Phone (mobile website) | MVP and version 1 | Employee canvas, 10 screens            |
+| Department lead | Runs requests and crews for their own departments, corrects hours, removes people from a department        | Computer               | Later             | Lead canvas, about 20 screens          |
+| Platform admin  | Creates, edits, and deletes company accounts; sees basic company details only                              | Computer               | Later             | Platform admin canvas, 6 screens       |
+| Public pages    | Landing page, create account, email code, set password, log in, forgot password                            | Both                   | MVP               | Public site canvas, about 10 screens   |
 
 **What each role cannot do.** Employees never see other employees' answers. Leads cannot invite people, assign leads, change roles, or volunteer for overtime. Only company admins invite people.
 
@@ -160,17 +160,17 @@ These are every decision made during design, written so each one can become a Vi
 
 The tables below are a proposal to design yourself and review with your mentor, and they become the Prisma schema. Clerk knows who a person is; your own tables hold their company, departments, and records, linked by the Clerk user ID.
 
-| Table | Purpose | Key fields and constraints |
-| --- | --- | --- |
-| companies | One row per customer company | name, created date |
-| departments | A company's departments | company_id, name; the ID never changes, so renames are safe |
-| users | A person in a company | clerk_user_id, company_id, role, status (active or removed); removed rows stay so past records keep a name |
-| department_members | Which people belong to which departments | user_id, department_id; unique pair |
-| ot_requests | A posted overtime need | company_id, department_id, start time, hours, personnel needed, description, created by, closed time, version number for the stale-edit check |
-| ot_responses | An employee's answer | request_id, user_id, answer (available, partial, decline), partial hours, needs reconfirm; unique per request and user |
-| ot_selections | Who is on the crew | request_id, user_id, hours granted, hours worked, adjusted by, selected by |
-| notifications | In-app alerts | user_id, type, request_id, read time |
-| audit_log | Who changed what and when | company_id, actor, action, record, before and after, time |
+| Table              | Purpose                                  | Key fields and constraints                                                                                                                    |
+| ------------------ | ---------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| companies          | One row per customer company             | name, created date                                                                                                                            |
+| departments        | A company's departments                  | company_id, name; the ID never changes, so renames are safe                                                                                   |
+| users              | A person in a company                    | clerk_user_id, company_id, role, status (active or removed); removed rows stay so past records keep a name                                    |
+| department_members | Which people belong to which departments | user_id, department_id; unique pair                                                                                                           |
+| ot_requests        | A posted overtime need                   | company_id, department_id, start time, hours, personnel needed, description, created by, closed time, version number for the stale-edit check |
+| ot_responses       | An employee's answer                     | request_id, user_id, answer (available, partial, decline), partial hours, needs reconfirm; unique per request and user                        |
+| ot_selections      | Who is on the crew                       | request_id, user_id, hours granted, hours worked, adjusted by, selected by                                                                    |
+| notifications      | In-app alerts                            | user_id, type, request_id, read time                                                                                                          |
+| audit_log          | Who changed what and when                | company_id, actor, action, record, before and after, time                                                                                     |
 
 **Questions to settle while designing**
 
@@ -198,13 +198,13 @@ Quickstarts change often, so follow each tool's current official guide over olde
 
 ### Steps 2 to 6
 
-| Step | What to build | Done when |
-| --- | --- | --- |
-| 2. Companies and departments | Tables for companies, departments, and membership; every company query filters by company | A company-scoping test passes |
-| 3. Employees | Company admin invites employees through Clerk and assigns departments | An invited employee signs in on a phone and lands on their requests |
-| 4. The core loop | Admin posts a request, employees answer, admin selects a crew, employees see their status | One answer per request and company scoping are tested; MVP is complete |
-| 5. Time rules | Auto-close at the start time, edit with reconfirm, close and reopen, stale-edit warning | Tests cover reconfirm and the two-admin case |
-| 6. Polish | Alerts, OT records, empty states, demo data, README, diagram | A reviewer can use the live site without help |
+| Step                         | What to build                                                                             | Done when                                                              |
+| ---------------------------- | ----------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| 2. Companies and departments | Tables for companies, departments, and membership; every company query filters by company | A company-scoping test passes                                          |
+| 3. Employees                 | Company admin invites employees through Clerk and assigns departments                     | An invited employee signs in on a phone and lands on their requests    |
+| 4. The core loop             | Admin posts a request, employees answer, admin selects a crew, employees see their status | One answer per request and company scoping are tested; MVP is complete |
+| 5. Time rules                | Auto-close at the start time, edit with reconfirm, close and reopen, stale-edit warning   | Tests cover reconfirm and the two-admin case                           |
+| 6. Polish                    | Alerts, OT records, empty states, demo data, README, diagram                              | A reviewer can use the live site without help                          |
 
 When a problem takes more than about an hour, stop and ask your mentor, or bring the exact error message and what you just did.
 
@@ -249,13 +249,13 @@ Every push is tested by GitHub Actions, and a merge to main deploys to Vercel. D
 
 Let AI draft the routine work, but if you cannot explain a piece of code in an interview, do not ship it.
 
-| Let AI draft | Use AI as a tutor, and write the key parts yourself | Write it yourself |
-| --- | --- | --- |
-| Project setup and config files | The database tables (you design, AI checks) | The rules list: what must always be true |
-| The GitHub Actions workflow | The service layer that enforces the rules | Company scoping: one company never sees another's data |
-| Screens from the designs: layout, styling, forms | Clerk and Prisma wiring | Who can do what: role and permission checks |
-| Repetitive pages and components | Validation and error handling | The stale-edit check for two admins |
-| Test scaffolding and demo data | The reconfirm and closing logic | The README and the reasons behind your choices |
+| Let AI draft                                     | Use AI as a tutor, and write the key parts yourself | Write it yourself                                      |
+| ------------------------------------------------ | --------------------------------------------------- | ------------------------------------------------------ |
+| Project setup and config files                   | The database tables (you design, AI checks)         | The rules list: what must always be true               |
+| The GitHub Actions workflow                      | The service layer that enforces the rules           | Company scoping: one company never sees another's data |
+| Screens from the designs: layout, styling, forms | Clerk and Prisma wiring                             | Who can do what: role and permission checks            |
+| Repetitive pages and components                  | Validation and error handling                       | The stale-edit check for two admins                    |
+| Test scaffolding and demo data                   | The reconfirm and closing logic                     | The README and the reasons behind your choices         |
 
 **A workflow that keeps you in charge**
 
@@ -263,7 +263,7 @@ Let AI draft the routine work, but if you cannot explain a piece of code in an i
 2. Ask AI for the code and a Vitest test for that rule.
 3. Read every line, ask for an explanation of anything unclear, then change something small yourself.
 4. Run the tests. A passing test for a rule you wrote is stronger than code that merely looks right.
-5. Commit small and often, with messages in your own words.
+5. Commit small and often, have AI draft the commits and only allow AI to push the commits to github after your approval.
 
 **Cautions.** AI can invent functions or use outdated setups, especially for Clerk, Prisma, and Next.js, so check the current docs. Auth, company scoping, and permission code can look right while being wrong, so write those tests yourself and try to break them. Never paste keys or database addresses into a chat. Say in the README that you used AI tools and what you did with them.
 
@@ -285,15 +285,15 @@ You can start applying once a version works, is live, and is explained well.
 
 The stack is approved, but these items were never settled, so the defaults below apply until the mentor says otherwise.
 
-| Decision | Current default |
-| --- | --- |
-| App name | OT Crew is the chosen name; check domains, app stores, and trademarks before using it publicly |
+| Decision                   | Current default                                                                                     |
+| -------------------------- | --------------------------------------------------------------------------------------------------- |
+| App name                   | OT Crew is the chosen name; check domains, app stores, and trademarks before using it publicly      |
 | Duplicate company accounts | Parked; options are a unique verified owner email, a name and address check, or a work-domain check |
-| Closing requests | Calculated from the start time, with no scheduled job |
-| Live updates | Refresh every few seconds, no WebSockets |
-| Validation | Zod |
-| Email | Clerk's built-in emails only |
-| Prisma migrations | Whether they run automatically on deploy |
-| Prisma and Neon | Connection pooling setup, to confirm in current docs |
-| Playwright | Optional single browser flow at the end |
-| Selecting an employee | Sends an alert; removing them does not |
+| Closing requests           | Calculated from the start time, with no scheduled job                                               |
+| Live updates               | Refresh every few seconds, no WebSockets                                                            |
+| Validation                 | Zod                                                                                                 |
+| Email                      | Clerk's built-in emails only                                                                        |
+| Prisma migrations          | Whether they run automatically on deploy                                                            |
+| Prisma and Neon            | Connection pooling setup, to confirm in current docs                                                |
+| Playwright                 | Optional single browser flow at the end                                                             |
+| Selecting an employee      | Sends an alert; removing them does not                                                              |
