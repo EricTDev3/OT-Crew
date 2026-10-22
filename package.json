@@ -12,6 +12,7 @@
     "typecheck": "next typegen && tsc --noEmit"
   },
   "dependencies": {
+    "@clerk/nextjs": "^7.9.19",
     "@prisma/adapter-neon": "^7.10.1",
     "@prisma/client": "^7.10.1",
     "dotenv": "^18.0.8",
