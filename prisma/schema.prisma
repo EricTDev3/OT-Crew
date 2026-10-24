@@ -12,3 +12,69 @@ datasource db {
   provider = "postgresql"
 }
 
+enum UserStatus {
+  INVITED
+  ACTIVE
+  REMOVED
+}
+
+enum UserRole {
+  ADMIN
+  EMPLOYEE
+}
+
+model Company {
+  id          Int          @id @default(autoincrement())
+  name        String
+  users       User[]
+  departments Department[]
+  timeZone    String
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+}
+
+model User {
+  id          Int                @id @default(autoincrement())
+  clerkUserId String?            @unique
+  companyId   Int
+  company     Company            @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  firstName   String
+  lastName    String
+  email       String             @unique
+  role        UserRole
+  memberships DepartmentMember[]
+  status      UserStatus         @default(INVITED)
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+  removedAt   DateTime?
+
+  @@unique([id, companyId])
+  @@index([companyId]) 
+}
+
+model Department {
+  id        Int                @id @default(autoincrement())
+  name      String
+  companyId Int
+  company   Company            @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  members   DepartmentMember[]
+  deletedAt DateTime?
+  createdAt DateTime           @default(now())
+  updatedAt DateTime           @updatedAt
+
+  @@unique([id, companyId])
+  @@index([companyId, name])
+}
+
+model DepartmentMember {
+  id           Int        @id @default(autoincrement())
+  companyId    Int
+  departmentId Int
+  department   Department @relation(fields: [departmentId, companyId], references: [id, companyId], onDelete: Cascade)
+  userId       Int
+  user         User       @relation(fields: [userId, companyId], references: [id, companyId], onDelete: Cascade)
+  createdAt    DateTime   @default(now())
+
+  @@unique([userId, departmentId])
+  @@index([departmentId])
+}
