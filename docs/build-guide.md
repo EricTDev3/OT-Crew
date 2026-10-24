@@ -112,6 +112,7 @@ These are every decision made during design, written so each one can become a Vi
 11. Every query for company data is limited to the signed-in person's company. One company never sees another's data.
 12. Employees see only requests for their own departments.
 13. Employees never see other employees' answers or how many have volunteered.
+14. Any record linking two company-owned records (a department membership, a request's department, an answer's user and request) must have both sides in the same company. This is enforced in the service layer, with a test, and optionally by the database.
 
 ### Requests and answers
 
