@@ -1,12 +1,10 @@
-import { auth } from "@clerk/nextjs/server";
+import { requireUser } from "@/lib/require-user";
 import { Suspense } from "react";
 
 async function DashboardContent() {
-  const { isAuthenticated, userId, redirectToSignIn } = await auth();
+  const user = await requireUser();
 
-  if (!isAuthenticated) return redirectToSignIn();
-
-  return <h1>Welcome! Your user ID is {userId}</h1>;
+  return <h1>Welcome {user.firstName}</h1>;
 }
 
 export default function DashboardPage() {
