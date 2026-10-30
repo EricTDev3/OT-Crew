@@ -10,6 +10,10 @@ type DecisionAnswer =
   | { kind: "allowed"; activeUser: FoundUser }
   | { kind: "redirect"; to: RedirectPaths };
 
+type ExistingUser =
+  | { kind: "allowed" }
+  | { kind: "redirect"; to: "/dashboard" };
+
 export function decideAccess(activeUser: FoundUser | null): DecisionAnswer {
   if (activeUser === null) {
     return { kind: "redirect", to: "/setup-company" };
@@ -20,4 +24,14 @@ export function decideAccess(activeUser: FoundUser | null): DecisionAnswer {
   }
 
   return { kind: "redirect", to: "/no-access" };
+}
+
+export function decideCompanySetupAccess(
+  activeUser: FoundUser | null,
+): ExistingUser {
+  if (activeUser === null) {
+    return { kind: "allowed" };
+  }
+
+  return { kind: "redirect", to: "/dashboard" };
 }
