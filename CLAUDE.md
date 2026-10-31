@@ -8,21 +8,24 @@
 
 ## Where we are
 
-Done: Step 1, the logic half of Step 2, and the access wrapper. Everything below is tested and pushed.
+Done: Step 1, the logic half of Step 2, the access wrapper, and the company setup page. Everything below is tested, or checked by hand where it depends on Clerk and the database.
 - Next.js on Vercel, GitHub Actions (typecheck, lint, tests with a Postgres service), Neon through Prisma, Clerk sign-in, protected /dashboard.
 - Prisma models: Company, User, Department, DepartmentMember (composite foreign keys keep a membership inside one company).
 - src/lib/company.ts: createCompanyWithAdmin creates the company, its first ADMIN user, and its departments in one nested write.
 - src/lib/schemas.ts: companyForm, the Zod schema for the company setup form.
 - src/lib/user.ts: findUserByClerkId returns id, companyId, role, status, and names, or null.
 - src/lib/access.ts: decideAccess turns that result into an answer. No row goes to /setup-company, ACTIVE is allowed, anything else goes to /no-access.
-- src/lib/require-user.ts: requireUser runs auth(), findUserByClerkId with the real client, then decideAccess, and either redirects or returns the active user. /dashboard uses it and greets the user by first name. Checked by hand against all three states (no row, INVITED, ACTIVE), except the no-row redirect, which lands on a 404 until /setup-company exists.
+- src/lib/require-user.ts: requireUser runs auth(), findUserByClerkId with the real client, then decideAccess, and either redirects or returns the active user. /dashboard uses it and greets the user by first name. Checked by hand against all three states (no row, INVITED, ACTIVE).
+- src/lib/access.ts: decideCompanySetupAccess is the rule for the setup page. Only someone with no User row is allowed. Anyone with a row, whatever the status, goes to /dashboard, where requireUser decides between the dashboard and /no-access. Tested.
+- src/lib/require-company-setup-access.ts: requireCompanySetupAccess runs auth(), findUserByClerkId, then decideCompanySetupAccess, and either redirects or returns the Clerk user ID. It runs on the setup page and as the first line of the Server Action, because the action is a public endpoint and the page check is only courtesy.
+- /setup-company: the page and form (department chips), and the createCompany Server Action in src/app/setup-company/actions.ts. The action reads email and names from Clerk (never the form), refuses an unverified email, validates with companyForm, and calls createCompanyWithAdmin. A unique constraint violation (Prisma P2002) returns a message instead of a crash. Checked by hand: invalid input, success, a second visit, and a duplicate email.
+- Clerk sign-up requires first and last name.
 - /no-access page with a Sign out button.
 - Header (root layout): OT Crew brand on the left, Sign in and Sign up on the right when signed out, the Clerk avatar when signed in. The app is light mode only, so there are no dark: styles.
 
 Next, in order:
-1. The company setup page and its Server Action: validate with companyForm, read email and names from Clerk (never from the form), call createCompanyWithAdmin. Use requireUser's redirect to /setup-company as the entry.
-2. The sign-up and email-code screens, then the company-scoping test and department create, rename, and delete.
-3. Before the next deploy: add NEXT_PUBLIC_CLERK_SIGN_IN_FALLBACK_REDIRECT_URL=/dashboard (and the sign-up version) in Vercel's settings. Locally it is set, so sign-in lands on /dashboard. Without it, the live site lands on /.
+1. The sign-up and email-code screens, then the company-scoping test and department create, rename, and delete.
+2. Add NEXT_PUBLIC_CLERK_SIGN_IN_FORCE_REDIRECT_URL=/dashboard and NEXT_PUBLIC_CLERK_SIGN_UP_FORCE_REDIRECT_URL=/dashboard in Vercel's settings, then redeploy (NEXT_PUBLIC_ values are fixed at build time). They are already in .env. The fallback versions did not work, because the header's Sign in button seems to send the current page as redirect_url, which beats the fallback. Revisit at invites (Step 3), where people should return to the invite link.
 
 ## Commands
 
@@ -45,6 +48,9 @@ Next, in order:
 - Only ACTIVE users are let in (an allow-list), so a status added later is refused until someone decides otherwise.
 - Removed users keep their User row (status REMOVED) so past records persist, and their clerkUserId is cleared. Future record tables should use onDelete Restrict, not Cascade.
 - Known gap: email is stored as typed and User.email is @unique, which is case-sensitive, so two spellings can become two users. Revisit at invites (Step 3). Department names are not unique in the database.
+- Known gap: the lookup is by clerkUserId, so a removed person (clerkUserId cleared) or an invited person who signs up on their own looks new and can reach the setup form. The unique email stops them, and they see the duplicate-email message. Revisit at invites (Step 3).
+- Known gaps: createCompany has no automated test (it needs Clerk and the database), and its validation message is generic ("Invalid values entered."). The time zone select lists seven US zones.
+- Google sign-in is on in the Clerk dev instance, and it skips the email code (Google has already verified the email). Decide at the sign-up screens whether to keep it.
 - Testing habit: build every case from one valid input and change one field, then break the code on purpose and confirm the matching test fails.
 
 ## More detail
