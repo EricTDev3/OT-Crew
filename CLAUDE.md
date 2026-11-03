@@ -8,7 +8,7 @@
 
 ## Where we are
 
-Done: Step 1, the logic half of Step 2, the access wrapper, and the company setup page. Everything below is tested, or checked by hand where it depends on Clerk and the database.
+Done: Step 1, the logic half of Step 2, the access wrapper, the company setup page, the landing page, and the sign-up page. Everything below is tested, or checked by hand where it depends on Clerk and the database.
 - Next.js on Vercel, GitHub Actions (typecheck, lint, tests with a Postgres service), Neon through Prisma, Clerk sign-in, protected /dashboard.
 - Prisma models: Company, User, Department, DepartmentMember (composite foreign keys keep a membership inside one company).
 - src/lib/company.ts: createCompanyWithAdmin creates the company, its first ADMIN user, and its departments in one nested write.
@@ -21,11 +21,15 @@ Done: Step 1, the logic half of Step 2, the access wrapper, and the company setu
 - /setup-company: the page and form (department chips), and the createCompany Server Action in src/app/setup-company/actions.ts. The action reads email and names from Clerk (never the form), refuses an unverified email, validates with companyForm, and calls createCompanyWithAdmin. A unique constraint violation (Prisma P2002) returns a message instead of a crash. Checked by hand: invalid input, success, a second visit, and a duplicate email.
 - Clerk sign-up requires first and last name.
 - /no-access page with a Sign out button.
-- Header (root layout): OT Crew brand on the left, Sign in and Sign up on the right when signed out, the Clerk avatar when signed in. The app is light mode only, so there are no dark: styles.
+- Header (root layout): dark navy, "OT Crew Builder" brand on the left, Log in and Create account on the right when signed out, the Clerk avatar when signed in. Font is Public Sans. The app is light mode only, so there are no dark: styles.
+- Landing page (src/app/page.tsx): hero, How it works, Why teams use it, and a Create account card, built from the Public Site design canvas (the Artifact tool can read it).
+- /sign-up: Clerk's SignUp component, restyled with appearance.elements to match the design's "Create account" board. ClerkProvider sets appearance.cssLayerName to "clerk" so Clerk's styles sit in the layer that globals.css already declares. Without it Clerk's styles are unlayered and beat Tailwind utilities, so none of the class names applied. The email field is relabeled "Work email" through ClerkProvider's localization. Clerk's component has no confirm-password field, and the code step is Clerk's own look. Checked by hand.
+- Google sign-in is off in the Clerk dev instance, so every sign-up confirms its email with a code. Repeat this on the production instance. A Gmail address is fine if typed in and confirmed.
+- Vercel has NEXT_PUBLIC_CLERK_SIGN_IN_FORCE_REDIRECT_URL=/dashboard, NEXT_PUBLIC_CLERK_SIGN_UP_FORCE_REDIRECT_URL=/dashboard, and NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up (the fallback versions did not work, because the header buttons send the current page as redirect_url, which beats the fallback). Revisit at invites (Step 3), where people should return to the invite link.
 
 Next, in order:
-1. The sign-up and email-code screens, then the company-scoping test and department create, rename, and delete.
-2. Add NEXT_PUBLIC_CLERK_SIGN_IN_FORCE_REDIRECT_URL=/dashboard and NEXT_PUBLIC_CLERK_SIGN_UP_FORCE_REDIRECT_URL=/dashboard in Vercel's settings, then redeploy (NEXT_PUBLIC_ values are fixed at build time). They are already in .env. The fallback versions did not work, because the header's Sign in button seems to send the current page as redirect_url, which beats the fallback. Revisit at invites (Step 3), where people should return to the invite link.
+1. The company-scoping test, then department create, rename, and delete.
+2. A /sign-in page to match the design (the Sign in link on the sign-up card still goes to Clerk's hosted page).
 
 ## Commands
 
@@ -50,7 +54,6 @@ Next, in order:
 - Known gap: email is stored as typed and User.email is @unique, which is case-sensitive, so two spellings can become two users. Revisit at invites (Step 3). Department names are not unique in the database.
 - Known gap: the lookup is by clerkUserId, so a removed person (clerkUserId cleared) or an invited person who signs up on their own looks new and can reach the setup form. The unique email stops them, and they see the duplicate-email message. Revisit at invites (Step 3).
 - Known gaps: createCompany has no automated test (it needs Clerk and the database), and its validation message is generic ("Invalid values entered."). The time zone select lists seven US zones.
-- Google sign-in is on in the Clerk dev instance, and it skips the email code (Google has already verified the email). Decide at the sign-up screens whether to keep it.
 - Testing habit: build every case from one valid input and change one field, then break the code on purpose and confirm the matching test fails.
 
 ## More detail
