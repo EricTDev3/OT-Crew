@@ -37,7 +37,13 @@ export default function RootLayout({
       className={`${publicSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
-        <ClerkProvider>
+        <ClerkProvider
+          appearance={{ cssLayerName: "clerk" }}
+          localization={{
+            formFieldLabel__emailAddress: "Work email",
+            formFieldInputPlaceholder__emailAddress: "name@yourcompany.com",
+          }}
+        >
           <header className="flex h-16 items-center justify-between border-b border-[#2b3a63] bg-[#14213d] px-8">
             <Link href="/" className="text-lg font-bold text-white">
               OT Crew Builder
