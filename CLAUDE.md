@@ -8,7 +8,7 @@
 
 ## Where we are
 
-Done: Step 1, the logic half of Step 2, the access wrapper, the company setup page, the landing page, and the sign-up page. Everything below is tested, or checked by hand where it depends on Clerk and the database.
+Done: Step 1, the logic half of Step 2, the access wrapper, the company setup page, the landing page, the sign-up page, and the first company-scoping test. Everything below is tested, or checked by hand where it depends on Clerk and the database.
 - Next.js on Vercel, GitHub Actions (typecheck, lint, tests with a Postgres service), Neon through Prisma, Clerk sign-in, protected /dashboard.
 - Prisma models: Company, User, Department, DepartmentMember (composite foreign keys keep a membership inside one company).
 - src/lib/company.ts: createCompanyWithAdmin creates the company, its first ADMIN user, and its departments in one nested write.
@@ -26,9 +26,10 @@ Done: Step 1, the logic half of Step 2, the access wrapper, the company setup pa
 - /sign-up: Clerk's SignUp component, restyled with appearance.elements to match the design's "Create account" board. ClerkProvider sets appearance.cssLayerName to "clerk" so Clerk's styles sit in the layer that globals.css already declares. Without it Clerk's styles are unlayered and beat Tailwind utilities, so none of the class names applied. The email field is relabeled "Work email" through ClerkProvider's localization. Clerk's component has no confirm-password field, and the code step is Clerk's own look. Checked by hand.
 - Google sign-in is off in the Clerk dev instance, so every sign-up confirms its email with a code. Repeat this on the production instance. A Gmail address is fine if typed in and confirmed.
 - Vercel has NEXT_PUBLIC_CLERK_SIGN_IN_FORCE_REDIRECT_URL=/dashboard, NEXT_PUBLIC_CLERK_SIGN_UP_FORCE_REDIRECT_URL=/dashboard, and NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up (the fallback versions did not work, because the header buttons send the current page as redirect_url, which beats the fallback). Revisit at invites (Step 3), where people should return to the invite link.
+- src/lib/department.ts: listDepartments(db, companyId) returns that company's departments that are not soft-deleted (deletedAt null), ordered by name then id. tests/department.test.ts covers: each of two companies sees only its own departments (both have an "IT", so a name-only filter would leak), a company with no departments gets [], and a soft-deleted department is hidden. The scoping test (companyId removed) and the soft-delete test (deletedAt: null removed) were each broken on purpose and failed.
 
 Next, in order:
-1. The company-scoping test, then department create, rename, and delete.
+1. Department create, rename, and delete. Every write must carry companyId in its where (a lookup by id alone lets one company change another's department), with a test that tries a wrong-company id and checks nothing changed. Delete is a soft delete (set deletedAt) and needs the typed name (rule 10).
 2. A /sign-in page to match the design (the Sign in link on the sign-up card still goes to Clerk's hosted page).
 
 ## Commands
