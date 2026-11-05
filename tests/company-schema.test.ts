@@ -1,4 +1,4 @@
-import companyForm from "../src/lib/schemas";
+import { companyForm } from "../src/lib/schemas";
 import { describe, test, expect } from "vitest";
 
 describe("companyForm", () => {

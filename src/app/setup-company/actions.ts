@@ -1,7 +1,7 @@
 "use server";
 import { requireCompanySetupAccess } from "@/lib/require-company-setup-access";
 import { createCompanyWithAdmin } from "@/lib/company";
-import companyForm from "@/lib/schemas";
+import { companyForm } from "@/lib/schemas";
 import { currentUser } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/prisma";
 import { Prisma } from "@/generated/prisma/client";

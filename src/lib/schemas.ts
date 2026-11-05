@@ -6,11 +6,13 @@ const ianaTimeZoneSchema = z.string().refine((tz) => validTimeZones.has(tz), {
   error: "Invalid IANA time zone",
 });
 
+const departmentName = z.string().trim().min(2).max(40);
+
 const companyForm = z.object({
   companyName: z.string().trim().min(1).max(50),
   timeZone: ianaTimeZoneSchema,
   departmentNames: z
-    .array(z.string().trim().min(2).max(40))
+    .array(departmentName)
     .min(1)
     .max(20)
     .refine(
@@ -20,4 +22,4 @@ const companyForm = z.object({
     ),
 });
 
-export default companyForm;
+export { companyForm, departmentName };
