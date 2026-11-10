@@ -4,6 +4,10 @@ type RenameResult =
   | { kind: "renamed"; department: Department }
   | { kind: "not-found" };
 
+type CreateResult =
+  | { kind: "created"; department: Department }
+  | { kind: "duplicate-name" };
+
 export async function listDepartments(db: PrismaClient, companyId: number) {
   const departments = await db.department.findMany({
     orderBy: [{ name: "asc" }, { id: "asc" }],
@@ -45,4 +49,32 @@ export async function renameDepartment(
   if (department === null) return { kind: "not-found" };
 
   return { kind: "renamed", department };
+}
+
+export async function createDepartment(
+  db: PrismaClient,
+  companyId: number,
+  name: string,
+): Promise<CreateResult> {
+  const findDuplicateDept = await db.department.findFirst({
+    where: {
+      name: {
+        equals: name,
+        mode: "insensitive",
+      },
+      companyId,
+      deletedAt: null,
+    },
+  });
+
+  if (findDuplicateDept) return { kind: "duplicate-name" };
+
+  const department = await db.department.create({
+    data: {
+      name,
+      companyId,
+    },
+  });
+
+  return { kind: "created", department };
 }

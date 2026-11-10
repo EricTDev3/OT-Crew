@@ -4,8 +4,11 @@ import {
   createCompanyWithAdmin,
   type CreateCompanyWithAdminInput,
 } from "../src/lib/company";
-import { listDepartments } from "../src/lib/department";
-import { renameDepartment } from "../src/lib/department";
+import {
+  listDepartments,
+  renameDepartment,
+  createDepartment,
+} from "../src/lib/department";
 
 beforeEach(resetDb);
 afterAll(() => testDb.$disconnect());
@@ -165,5 +168,93 @@ describe("renameDepartment", () => {
 
     expect(result.kind).toEqual("not-found");
     expect(savedDeptName?.name).toBe("Finishing");
+  });
+});
+
+describe("createDepartments", () => {
+  test("It creates a department under the right company", async () => {
+    const newDept = await createDepartment(testDb, company1.id, "HR");
+
+    if (newDept.kind !== "created") {
+      throw new Error("expected created");
+    }
+
+    const savedDeptName = await testDb.department.findUnique({
+      where: { id: newDept.department.id },
+    });
+
+    expect(newDept.kind).toEqual("created");
+    expect(savedDeptName?.companyId).toBe(company1.id);
+    expect(savedDeptName?.name).toEqual("HR");
+  });
+
+  test("It should not create a duplicate department in the same company", async () => {
+    const newDept = await createDepartment(testDb, company1.id, "Finishing");
+
+    const deptCount = await testDb.department.count({
+      where: { companyId: company1.id },
+    });
+
+    expect(newDept.kind).toEqual("duplicate-name");
+    expect(deptCount).toEqual(input1.departmentNames.length);
+  });
+
+  test("It should not create a duplicate department regardless of case", async () => {
+    const name = "FINISHING";
+    const deptLowerCase = name.toLowerCase();
+
+    const newDept = await createDepartment(testDb, company1.id, deptLowerCase);
+
+    const deptCount = await testDb.department.count({
+      where: { companyId: company1.id },
+    });
+
+    expect(newDept.kind).toEqual("duplicate-name");
+    expect(deptCount).toEqual(input1.departmentNames.length);
+  });
+
+  test("Allow creation of a department from another company", async () => {
+    const newDept = await createDepartment(testDb, company1.id, "CS");
+
+    if (newDept.kind !== "created") {
+      throw new Error("expected created");
+    }
+
+    const savedDeptName = await testDb.department.findUnique({
+      where: { id: newDept.department.id },
+    });
+
+    expect(newDept.kind).toEqual("created");
+    expect(savedDeptName?.companyId).toEqual(company1.id);
+    expect(savedDeptName?.name).toEqual("CS");
+  });
+
+  test("Soft deleted departments should not block the name.", async () => {
+    const deptToUpdate = company1.departments.find(
+      (d) => d.name === "Finishing",
+    );
+
+    if (!deptToUpdate) throw new Error(`seed has no department "Finishing"`);
+
+    await testDb.department.update({
+      where: { id: deptToUpdate.id },
+      data: { deletedAt: new Date() },
+    });
+
+    const newDept = await createDepartment(testDb, company1.id, "Finishing");
+
+    if (newDept.kind !== "created") {
+      throw new Error("expected created");
+    }
+
+    const savedDeptName = await testDb.department.findUnique({
+      where: { id: newDept.department.id },
+    });
+
+    expect(newDept.kind).toEqual("created");
+    expect(savedDeptName?.companyId).toEqual(company1.id);
+    expect(newDept.department.id).not.toBe(deptToUpdate.id);
+    expect(savedDeptName?.deletedAt).toEqual(null);
+    expect(savedDeptName?.name).toEqual("Finishing");
   });
 });
