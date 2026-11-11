@@ -8,6 +8,8 @@ type CreateResult =
   | { kind: "created"; department: Department }
   | { kind: "duplicate-name" };
 
+type DeleteResult = { kind: "deleted" } | { kind: "not-found" };
+
 export async function listDepartments(db: PrismaClient, companyId: number) {
   const departments = await db.department.findMany({
     orderBy: [{ name: "asc" }, { id: "asc" }],
@@ -77,4 +79,28 @@ export async function createDepartment(
   });
 
   return { kind: "created", department };
+}
+
+export async function deleteDepartment(
+  db: PrismaClient,
+  companyId: number,
+  departmentId: number,
+  nameEntered: string,
+): Promise<DeleteResult> {
+  const result = await db.department.updateMany({
+    where: {
+      companyId,
+      id: departmentId,
+      name: {
+        equals: nameEntered.trim(),
+        mode: "insensitive",
+      },
+      deletedAt: null,
+    },
+    data: { deletedAt: new Date() },
+  });
+
+  if (result.count === 0) return { kind: "not-found" };
+
+  return { kind: "deleted" };
 }

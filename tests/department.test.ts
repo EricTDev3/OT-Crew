@@ -8,6 +8,7 @@ import {
   listDepartments,
   renameDepartment,
   createDepartment,
+  deleteDepartment,
 } from "../src/lib/department";
 
 beforeEach(resetDb);
@@ -256,5 +257,117 @@ describe("createDepartments", () => {
     expect(newDept.department.id).not.toBe(deptToUpdate.id);
     expect(savedDeptName?.deletedAt).toEqual(null);
     expect(savedDeptName?.name).toEqual("Finishing");
+  });
+});
+
+describe("deleteDepartment", () => {
+  test("Deletes it's own department with the exact name.", async () => {
+    const deptToUpdate = company1.departments.find(
+      (d) => d.name === "Finishing",
+    );
+
+    if (!deptToUpdate) throw new Error(`seed has no department "Finishing"`);
+
+    const result = await deleteDepartment(
+      testDb,
+      company1.id,
+      deptToUpdate.id,
+      "Finishing",
+    );
+
+    const updatedDept = await testDb.department.findUnique({
+      where: { id: deptToUpdate.id },
+    });
+
+    expect(result.kind).toEqual("deleted");
+    expect(updatedDept?.deletedAt).toBeInstanceOf(Date);
+  });
+
+  test("Deletes a department regardless of casing.", async () => {
+    const deptToUpdate = company1.departments.find(
+      (d) => d.name === "Finishing",
+    );
+
+    if (!deptToUpdate) throw new Error(`seed has no department "Finishing"`);
+
+    const result = await deleteDepartment(
+      testDb,
+      company1.id,
+      deptToUpdate.id,
+      "FINISHING",
+    );
+    const updatedDept = await testDb.department.findUnique({
+      where: { id: deptToUpdate.id },
+    });
+
+    expect(result.kind).toEqual("deleted");
+    expect(updatedDept?.deletedAt).toBeInstanceOf(Date);
+  });
+
+  test("Deletes nothing when the wrong department name is entered.", async () => {
+    const deptToUpdate = company1.departments.find(
+      (d) => d.name === "Finishing",
+    );
+
+    if (!deptToUpdate) throw new Error(`seed has no department "IT"`);
+
+    const result = await deleteDepartment(
+      testDb,
+      company1.id,
+      deptToUpdate.id,
+      "Marketing",
+    );
+    const updatedDept = await testDb.department.findUnique({
+      where: { id: deptToUpdate.id },
+    });
+
+    expect(result.kind).toEqual("not-found");
+    expect(updatedDept?.deletedAt).toBe(null);
+  });
+
+  test("Deletes nothing when the wrong company's department id is referenced.", async () => {
+    const deptToUpdate = company1.departments.find((d) => d.name === "IT");
+
+    if (!deptToUpdate) throw new Error(`seed has no department "IT"`);
+
+    const result = await deleteDepartment(
+      testDb,
+      company2.id,
+      deptToUpdate.id,
+      "IT",
+    );
+    const updatedDept = await testDb.department.findUnique({
+      where: { id: deptToUpdate.id },
+    });
+
+    expect(result.kind).toEqual("not-found");
+    expect(updatedDept?.deletedAt).toBe(null);
+  });
+
+  test("An already-deleted department returns not-found.", async () => {
+    const deptToUpdate = company1.departments.find((d) => d.name === "IT");
+
+    if (!deptToUpdate) throw new Error(`seed has no department "IT"`);
+
+    await deleteDepartment(testDb, company1.id, deptToUpdate.id, "IT");
+
+    const updatedDept = await testDb.department.findUnique({
+      where: { id: deptToUpdate.id },
+    });
+
+    const result = await deleteDepartment(
+      testDb,
+      company1.id,
+      deptToUpdate.id,
+      "IT",
+    );
+
+    const reupdatedDept = await testDb.department.findUnique({
+      where: { id: deptToUpdate.id },
+    });
+
+    expect(result.kind).toEqual("not-found");
+    expect(updatedDept?.deletedAt).toBeInstanceOf(Date);
+    expect(updatedDept?.deletedAt).toEqual(reupdatedDept?.deletedAt);
   });
 });
