@@ -4,9 +4,7 @@ import { requireUser } from "@/lib/require-user";
 import { decideDepartmentChange } from "@/lib/department-permission";
 import { listDepartments } from "@/lib/department";
 import { prisma } from "@/lib/prisma";
-
-const inputClass =
-  "w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-slate-900 placeholder:text-slate-500";
+import AddDepartmentForm from "./add-department-form";
 
 const secondaryButtonClass =
   "rounded-lg border border-slate-900 px-5 py-2.5 font-semibold text-slate-900 disabled:cursor-not-allowed disabled:opacity-50";
@@ -81,30 +79,7 @@ async function DepartmentsContent() {
           )}
         </section>
 
-        <section className="rounded-2xl border border-gray-200 bg-white p-6">
-          <h2 className="text-lg font-bold text-slate-900">Add a department</h2>
-          <label
-            htmlFor="departmentName"
-            className="mt-4 block text-sm font-semibold text-slate-900"
-          >
-            Name
-          </label>
-          <input
-            id="departmentName"
-            name="name"
-            type="text"
-            placeholder="e.g. Returns"
-            disabled
-            className={`${inputClass} mt-2 disabled:opacity-60`}
-          />
-          <button
-            type="button"
-            disabled
-            className="mt-4 rounded-lg bg-blue-900 px-5 py-3 font-semibold text-white disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            Add department
-          </button>
-        </section>
+        <AddDepartmentForm />
       </div>
     </>
   );

@@ -17,3 +17,13 @@ body {
   background: var(--background);
   color: var(--foreground);
 }
+
+/* Tailwind v4 leaves buttons on the default arrow. This gives every enabled
+   button the pointer. It is deliberately outside any @layer: unlayered styles
+   beat every layer (base, clerk, components, utilities), so nothing can set
+   the arrow back. Disabled buttons are excluded by :not(:disabled), so
+   disabled:cursor-not-allowed still applies to them. */
+button:not(:disabled),
+[role="button"]:not([aria-disabled="true"]) {
+  cursor: pointer;
+}
