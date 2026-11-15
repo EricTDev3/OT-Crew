@@ -10,6 +10,7 @@ import { Geist_Mono, Public_Sans } from "next/font/google";
 import Link from "next/link";
 import "./globals.css";
 import { Suspense } from "react";
+import AdminNav from "@/components/admin-nav";
 
 const publicSans = Public_Sans({
   variable: "--font-public-sans",
@@ -49,6 +50,11 @@ export default function RootLayout({
               OT Crew Builder
             </Link>
             <div className="flex items-center gap-2">
+              {/* Shows the admin links. It renders nothing for signed-out
+                  visitors and for anyone who is not an active admin. */}
+              <Suspense>
+                <AdminNav />
+              </Suspense>
               <Suspense>
                 <Show when="signed-out">
                   <SignInButton>
