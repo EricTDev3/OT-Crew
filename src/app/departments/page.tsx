@@ -5,9 +5,7 @@ import { decideDepartmentChange } from "@/lib/department-permission";
 import { listDepartments } from "@/lib/department";
 import { prisma } from "@/lib/prisma";
 import AddDepartmentForm from "./add-department-form";
-
-const secondaryButtonClass =
-  "rounded-lg border border-slate-900 px-5 py-2.5 font-semibold text-slate-900 disabled:cursor-not-allowed disabled:opacity-50";
+import DepartmentRow from "./department-row";
 
 async function DepartmentsContent() {
   const user = await requireUser();
@@ -47,32 +45,11 @@ async function DepartmentsContent() {
               </thead>
               <tbody>
                 {departments.map((department) => (
-                  <tr
+                  <DepartmentRow
                     key={department.id}
-                    className="border-b border-gray-200 last:border-b-0"
-                  >
-                    <td className="py-4 text-lg font-semibold text-slate-900">
-                      {department.name}
-                    </td>
-                    <td className="py-4">
-                      <div className="flex justify-end gap-3">
-                        <button
-                          type="button"
-                          disabled
-                          className={secondaryButtonClass}
-                        >
-                          Rename
-                        </button>
-                        <button
-                          type="button"
-                          disabled
-                          className={secondaryButtonClass}
-                        >
-                          Delete
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
+                    id={department.id}
+                    name={department.name}
+                  />
                 ))}
               </tbody>
             </table>
