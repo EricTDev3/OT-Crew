@@ -78,7 +78,7 @@ Ten choices are settled and approved by the mentor. Next.js handles both screens
 
 ## Roles and screens
 
-Four roles and the public pages are designed on five private canvases; version 1 builds the company admin and employee parts. The canvases are private claude.ai links and cannot be opened by Claude Code.
+Four roles and the public pages are designed on five private canvases; version 1 builds the company admin and employee parts. The canvases can be referenced by claude code and can only be edited if instructed to.
 
 | Role or area    | What they do                                                                                               | Device                 | Release           | Designs                                |
 | --------------- | ---------------------------------------------------------------------------------------------------------- | ---------------------- | ----------------- | -------------------------------------- |
@@ -298,3 +298,11 @@ The stack is approved, but these items were never settled, so the defaults below
 | Prisma and Neon            | Connection pooling setup, to confirm in current docs                                                |
 | Playwright                 | Optional single browser flow at the end                                                             |
 | Selecting an employee      | Sends an alert; removing them does not                                                              |
+
+## Screen Markups
+
+1. system admin - https://claude.ai/artifact/4bxJsktWLkdVT3o423jeds#page-dcb81aee8d83
+2. company admin - https://claude.ai/artifact/3piXkqJ6qqmL2cuKp8yVhQ#artboard-167ed0da13f9
+3. Department leads/admin - https://claude.ai/artifact/3piXkqJ6qqmL2cuKp8yVhQ#artboard-167ed0da13f9
+4. Employees - https://claude.ai/artifact/6jfkKvDiWLRwqLLaiUCjhj#page-dcb81aee8d83
+5. Public - https://claude.ai/artifact/5rruJKibX8VRa3VFQiSmCX#artboard-a25e55bc84d8
