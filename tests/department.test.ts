@@ -170,6 +170,128 @@ describe("renameDepartment", () => {
     expect(result.kind).toEqual("not-found");
     expect(savedDeptName?.name).toBe("Finishing");
   });
+
+  function findFinishing() {
+    const dept = company1.departments.find((d) => d.name === "Finishing");
+    if (!dept) throw new Error(`seed has no department "Finishing"`);
+    return dept;
+  }
+
+  test("Rejects a name another department in the same company already has.", async () => {
+    const finishing = findFinishing();
+
+    const result = await renameDepartment(
+      testDb,
+      company1.id,
+      finishing.id,
+      "Soldering",
+    );
+
+    const saved = await testDb.department.findUnique({
+      where: { id: finishing.id },
+    });
+
+    expect(result.kind).toEqual("duplicate-name");
+    expect(saved?.name).toBe("Finishing");
+  });
+
+  test("Allows a name that only another company has.", async () => {
+    const finishing = findFinishing();
+
+    const result = await renameDepartment(
+      testDb,
+      company1.id,
+      finishing.id,
+      "HR",
+    );
+
+    const saved = await testDb.department.findUnique({
+      where: { id: finishing.id },
+    });
+
+    expect(result.kind).toEqual("renamed");
+    expect(saved?.name).toBe("HR");
+  });
+
+  test("Rejects a name that differs from another department only in case.", async () => {
+    const finishing = findFinishing();
+
+    const result = await renameDepartment(
+      testDb,
+      company1.id,
+      finishing.id,
+      "soldering",
+    );
+
+    const saved = await testDb.department.findUnique({
+      where: { id: finishing.id },
+    });
+
+    expect(result.kind).toEqual("duplicate-name");
+    expect(saved?.name).toBe("Finishing");
+  });
+
+  test("Allows renaming a department to its own exact name.", async () => {
+    const finishing = findFinishing();
+
+    const result = await renameDepartment(
+      testDb,
+      company1.id,
+      finishing.id,
+      "Finishing",
+    );
+
+    const saved = await testDb.department.findUnique({
+      where: { id: finishing.id },
+    });
+
+    expect(result.kind).toEqual("renamed");
+    expect(saved?.name).toBe("Finishing");
+  });
+
+  test("Allows changing only the capitalisation of its own name.", async () => {
+    const finishing = findFinishing();
+
+    const result = await renameDepartment(
+      testDb,
+      company1.id,
+      finishing.id,
+      "finishing",
+    );
+
+    const saved = await testDb.department.findUnique({
+      where: { id: finishing.id },
+    });
+
+    expect(result.kind).toEqual("renamed");
+    expect(saved?.name).toBe("finishing");
+  });
+
+  test("A soft-deleted department does not block the name.", async () => {
+    const finishing = findFinishing();
+
+    const soldering = company1.departments.find((d) => d.name === "Soldering");
+    if (!soldering) throw new Error(`seed has no department "Soldering"`);
+
+    await testDb.department.update({
+      where: { id: soldering.id },
+      data: { deletedAt: new Date() },
+    });
+
+    const result = await renameDepartment(
+      testDb,
+      company1.id,
+      finishing.id,
+      "Soldering",
+    );
+
+    const saved = await testDb.department.findUnique({
+      where: { id: finishing.id },
+    });
+
+    expect(result.kind).toEqual("renamed");
+    expect(saved?.name).toBe("Soldering");
+  });
 });
 
 describe("createDepartments", () => {

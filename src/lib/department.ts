@@ -2,6 +2,7 @@ import type { Department, PrismaClient } from "../generated/prisma/client";
 
 type RenameResult =
   | { kind: "renamed"; department: Department }
+  | { kind: "duplicate-name" }
   | { kind: "not-found" };
 
 type CreateResult =
@@ -28,6 +29,20 @@ export async function renameDepartment(
   departmentId: number,
   name: string,
 ): Promise<RenameResult> {
+  const findDuplicateDept = await db.department.findFirst({
+    where: {
+      name: {
+        equals: name,
+        mode: "insensitive",
+      },
+      id: { not: departmentId },
+      companyId,
+      deletedAt: null,
+    },
+  });
+
+  if (findDuplicateDept) return { kind: "duplicate-name" };
+
   const result = await db.department.updateMany({
     where: {
       companyId,
