@@ -1,8 +1,10 @@
 import type { findUserByClerkId } from "./user";
+import { decideDepartmentChange } from "./department-permission";
 
 export type FoundUser = NonNullable<
   Awaited<ReturnType<typeof findUserByClerkId>>
 >;
+export type NavLinks = { departments: boolean };
 
 type RedirectPaths = "/setup-company" | "/no-access";
 
@@ -34,4 +36,12 @@ export function decideCompanySetupAccess(
   }
 
   return { kind: "redirect", to: "/dashboard" };
+}
+
+export function decideNavLinksAccess(activeUser: FoundUser | null): NavLinks {
+  if (activeUser === null) return { departments: false };
+  if (activeUser.status !== "ACTIVE") return { departments: false };
+
+  const result = decideDepartmentChange(activeUser.role);
+  return { departments: result.kind === "allowed" };
 }

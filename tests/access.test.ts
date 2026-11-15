@@ -2,6 +2,7 @@ import { describe, expect, test } from "vitest";
 import {
   decideAccess,
   decideCompanySetupAccess,
+  decideNavLinksAccess,
   type FoundUser,
 } from "../src/lib/access";
 
@@ -79,5 +80,37 @@ describe("decideCompanySetupAccess", () => {
     });
 
     expect(result).toEqual({ kind: "redirect", to: "/dashboard" });
+  });
+});
+
+describe("decideNavLinksAccess", () => {
+  test("It should return true if the user is an active admin", () => {
+    const result = decideNavLinksAccess(activeUser);
+
+    expect(result).toEqual({ departments: true });
+  });
+
+  test("It should return false if there is no user", () => {
+    const result = decideNavLinksAccess(null);
+
+    expect(result).toEqual({ departments: false });
+  });
+
+  test("It should return false if the user status is active but role is not admin", () => {
+    const result = decideNavLinksAccess({ ...activeUser, role: "EMPLOYEE" });
+
+    expect(result).toEqual({ departments: false });
+  });
+
+  test("It should return false if the user status is invited", () => {
+    const result = decideNavLinksAccess({ ...activeUser, status: "INVITED" });
+
+    expect(result).toEqual({ departments: false });
+  });
+
+  test("It should return false if the user status is removed", () => {
+    const result = decideNavLinksAccess({ ...activeUser, status: "REMOVED" });
+
+    expect(result).toEqual({ departments: false });
   });
 });
