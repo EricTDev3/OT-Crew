@@ -100,16 +100,11 @@ export async function deleteDepartment(
   db: PrismaClient,
   companyId: number,
   departmentId: number,
-  nameEntered: string,
 ): Promise<DeleteResult> {
   const result = await db.department.updateMany({
     where: {
       companyId,
       id: departmentId,
-      name: {
-        equals: nameEntered.trim(),
-        mode: "insensitive",
-      },
       deletedAt: null,
     },
     data: { deletedAt: new Date() },
