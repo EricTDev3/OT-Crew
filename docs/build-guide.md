@@ -108,7 +108,7 @@ These are every decision made during design, written so each one can become a Vi
 7. Companies create their own departments, and admins can rename them.
 8. A department has a permanent ID. Records point to the ID and show the current name.
 9. A person can belong to several departments.
-10. Deleting a department requires typing its name. Its people stay in the company, its open requests close, and past records keep it, shown as deleted.
+10. Deleting a department requires confirming in a dialog ("Are you sure?"); the name is not typed (changed from typing the name, Nov 2026). Its people stay in the company, its open requests close, and past records keep it, shown as deleted.
 11. Every query for company data is limited to the signed-in person's company. One company never sees another's data.
 12. Employees see only requests for their own departments.
 13. Employees never see other employees' answers or how many have volunteered.
