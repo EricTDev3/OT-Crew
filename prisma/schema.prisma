@@ -36,6 +36,7 @@ model Company {
 model User {
   id          Int                @id @default(autoincrement())
   clerkUserId String?            @unique
+  clerkInvitationId String?      @unique
   companyId   Int
   company     Company            @relation(fields: [companyId], references: [id], onDelete: Cascade)
   firstName   String
