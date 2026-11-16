@@ -19,7 +19,7 @@ describe("createCompanyWithAdmin", () => {
     departmentNames: ["Finishing", "Soldering", "IT"],
   };
 
-  test("create a company with given name", async () => {
+  test("Create a company with given name", async () => {
     await createCompanyWithAdmin(testDb, input);
 
     const companies = await testDb.company.findMany();
@@ -28,19 +28,19 @@ describe("createCompanyWithAdmin", () => {
     expect(companies[0].name).toBe("Acme Corp");
   });
 
-  test("user should be created and be linked to the correct company", async () => {
+  test("User should be created and be linked to the correct company", async () => {
     await createCompanyWithAdmin(testDb, input);
 
     const users = await testDb.user.findMany();
     const companies = await testDb.company.findMany();
 
     expect(users).toHaveLength(1);
-    expect(users[0].email).toBe(input.email);
+    expect(users[0].email).toBe("jsmith@acme.com");
     expect(users[0].role).toBe("ADMIN");
     expect(users[0].companyId).toEqual(companies[0].id);
   });
 
-  test("department should be created and all companies linked to the correct company", async () => {
+  test("Cepartment should be created and all companies linked to the correct company", async () => {
     await createCompanyWithAdmin(testDb, input);
 
     const depts = await testDb.department.findMany();
@@ -54,7 +54,7 @@ describe("createCompanyWithAdmin", () => {
     );
   });
 
-  test("company cannot be created when the admin cannot be created", async () => {
+  test("Company cannot be created when the admin cannot be created", async () => {
     await createCompanyWithAdmin(testDb, input);
 
     await expect(
@@ -73,5 +73,16 @@ describe("createCompanyWithAdmin", () => {
       "Other Corp",
     );
     expect(depts).toHaveLength(input.departmentNames.length);
+  });
+
+  test("Store the trimmed and lowercase email", async () => {
+    await createCompanyWithAdmin(testDb, {
+      ...input,
+      email: " Jsmith@acme.COM",
+    });
+
+    const user = await testDb.user.findMany();
+
+    expect(user[0].email).toBe("jsmith@acme.com");
   });
 });

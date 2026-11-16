@@ -1,4 +1,5 @@
 import type { PrismaClient } from "../generated/prisma/client";
+import { normalizeEmail } from "./email";
 
 export type CreateCompanyWithAdminInput = {
   clerkUserId: string;
@@ -21,7 +22,7 @@ export async function createCompanyWithAdmin(
       users: {
         create: {
           clerkUserId: input.clerkUserId,
-          email: input.email,
+          email: normalizeEmail(input.email),
           firstName: input.firstName,
           lastName: input.lastName,
           role: "ADMIN",
