@@ -22,4 +22,12 @@ const companyForm = z.object({
     ),
 });
 
-export { companyForm, departmentName };
+const inviteForm = z.object({
+  firstName: z.string().trim().min(1).max(50),
+  lastName: z.string().trim().min(1).max(50),
+  email: z.string().trim().pipe(z.email()),
+  role: z.enum(["ADMIN", "EMPLOYEE"]),
+  departmentIds: z.array(z.coerce.number().int().min(1)),
+});
+
+export { companyForm, departmentName, inviteForm };

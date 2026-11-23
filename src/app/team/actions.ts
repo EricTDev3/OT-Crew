@@ -1,0 +1,69 @@
+"use server";
+import { requireUser } from "@/lib/require-user";
+import { prisma } from "@/lib/prisma";
+import { decideInviteChange } from "@/lib/invite-permission";
+import { inviteForm } from "@/lib/schemas";
+import { createInvite } from "@/lib/invite";
+import { revalidatePath } from "next/cache";
+import type { DepartmentFormState } from "../departments/actions";
+import { clerkClient } from "@clerk/nextjs/server";
+
+export async function sendInvite(
+  _prevState: DepartmentFormState,
+  formData: FormData,
+): Promise<DepartmentFormState> {
+  const user = await requireUser();
+
+  const decision = decideInviteChange(user.role);
+
+  if (decision.kind === "forbidden") return { message: "forbidden" };
+
+  const parsed = inviteForm.safeParse({
+    firstName: formData.get("firstName"),
+    lastName: formData.get("lastName"),
+    email: formData.get("email"),
+    role: formData.get("role"),
+    departmentIds: formData.getAll("departmentIds"),
+  });
+
+  if (!parsed.success) {
+    return { message: "Check the name, email, and departments." };
+  }
+
+  const result = await createInvite(prisma, user.companyId, parsed.data);
+
+  if (result.kind === "email-taken") {
+    return { message: `An account with this email was already created.` };
+  }
+  if (result.kind === "invalid-departments") {
+    return {
+      message: `One or more departments are no longer available. Refresh the page.`,
+    };
+  }
+
+  let invitation;
+
+  try {
+    const client = await clerkClient();
+    invitation = await client.invitations.createInvitation({
+      emailAddress: result.user.email,
+      redirectUrl: "/sign-up",
+    });
+  } catch (error) {
+    console.error("Clerk invitation failed", error);
+
+    await prisma.user.delete({
+      where: { id: result.user.id },
+    });
+    return { message: "Couldn't send the invite. Please try again." };
+  }
+
+  await prisma.user.update({
+    where: { id: result.user.id },
+    data: { clerkInvitationId: invitation.id },
+  });
+
+  revalidatePath("/team");
+
+  return null;
+}
