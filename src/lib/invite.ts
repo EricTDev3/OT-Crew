@@ -1,4 +1,9 @@
-import type { PrismaClient, User, UserRole } from "../generated/prisma/client";
+import {
+  Prisma,
+  type PrismaClient,
+  type User,
+  type UserRole,
+} from "../generated/prisma/client";
 import { normalizeEmail } from "./email";
 
 export type CreateInviteInput = {
@@ -40,21 +45,30 @@ export async function createInvite(
   if (departments.length !== departmentIds.length)
     return { kind: "invalid-departments" };
 
-  const user = await db.user.create({
-    data: {
-      companyId,
-      email: normalizedEmail,
-      firstName: input.firstName,
-      lastName: input.lastName,
-      role: input.role,
-      status: "INVITED",
-      memberships: {
-        createMany: {
-          data: departmentIds.map((departmentId) => ({ departmentId })),
+  try {
+    const user = await db.user.create({
+      data: {
+        companyId,
+        email: normalizedEmail,
+        firstName: input.firstName,
+        lastName: input.lastName,
+        role: input.role,
+        status: "INVITED",
+        memberships: {
+          createMany: {
+            data: departmentIds.map((departmentId) => ({ departmentId })),
+          },
         },
       },
-    },
-  });
-
-  return { kind: "invited", user };
+    });
+    return { kind: "invited", user };
+  } catch (error) {
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === "P2002"
+    ) {
+      return { kind: "email-taken" };
+    }
+    throw error;
+  }
 }

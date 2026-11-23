@@ -6,6 +6,7 @@ import {
   type CreateCompanyWithAdminInput,
 } from "../src/lib/company";
 import { createInvite, type CreateInviteInput } from "../src/lib/invite";
+import { Prisma, type PrismaClient } from "../src/generated/prisma/client";
 
 beforeEach(resetDb);
 afterAll(() => testDb.$disconnect());
@@ -52,6 +53,25 @@ beforeEach(async () => {
 // The two admins from setup are the only users before each test.
 async function countUsers() {
   return testDb.user.count();
+}
+
+// A stand-in for the database client. Reads go to the real test database,
+// but user.create throws the error we hand it. This reproduces the race where
+// the email is free at the check but taken by the time of the insert.
+function dbWhereCreateThrows(error: Error) {
+  return {
+    user: {
+      findUnique: (args: Parameters<typeof testDb.user.findUnique>[0]) =>
+        testDb.user.findUnique(args),
+      create: async () => {
+        throw error;
+      },
+    },
+    department: {
+      findMany: (args: Parameters<typeof testDb.department.findMany>[0]) =>
+        testDb.department.findMany(args),
+    },
+  } as unknown as PrismaClient;
 }
 
 describe("createInvite", () => {
@@ -222,6 +242,31 @@ describe("createInvite", () => {
 
     expect(result).toEqual({ kind: "invalid-departments" });
     expect(await countUsers()).toBe(before);
+  });
+
+  test("Returns email-taken when the insert hits a unique violation (P2002)", async () => {
+    const before = await countUsers();
+    const uniqueViolation = new Prisma.PrismaClientKnownRequestError(
+      "Unique constraint failed",
+      { code: "P2002", clientVersion: "test" },
+    );
+
+    const result = await createInvite(
+      dbWhereCreateThrows(uniqueViolation),
+      company1.id,
+      validInput,
+    );
+
+    expect(result).toEqual({ kind: "email-taken" });
+    expect(await countUsers()).toBe(before);
+  });
+
+  test("Rethrows any other error from the insert", async () => {
+    const other = new Error("connection lost");
+
+    await expect(
+      createInvite(dbWhereCreateThrows(other), company1.id, validInput),
+    ).rejects.toThrow("connection lost");
   });
 
   test("Rejects an empty department list", async () => {
