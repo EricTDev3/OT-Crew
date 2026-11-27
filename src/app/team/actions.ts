@@ -13,10 +13,24 @@ export async function sendInvite(
   formData: FormData,
 ): Promise<DepartmentFormState> {
   const user = await requireUser();
-
   const decision = decideInviteChange(user.role);
 
   if (decision.kind === "forbidden") return { message: "forbidden" };
+
+  // Config problems fail before any write, so no INVITED row is left behind.
+  if (!process.env.APP_URL) {
+    console.error("APP_URL is not set");
+    return { message: "Couldn't send the invite. Please try again later." };
+  }
+
+  let appUrl: string;
+
+  try {
+    appUrl = new URL("/sign-up", process.env.APP_URL).toString();
+  } catch (error) {
+    console.error("APP_URL is not a valid URL", error);
+    return { message: "Couldn't send the invite. Please try again later." };
+  }
 
   const parsed = inviteForm.safeParse({
     firstName: formData.get("firstName"),
@@ -45,9 +59,10 @@ export async function sendInvite(
 
   try {
     const client = await clerkClient();
+
     invitation = await client.invitations.createInvitation({
       emailAddress: result.user.email,
-      redirectUrl: "/sign-up",
+      redirectUrl: appUrl,
     });
   } catch (error) {
     console.error("Clerk invitation failed", error);
