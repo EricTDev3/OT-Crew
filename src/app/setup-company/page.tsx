@@ -25,9 +25,13 @@ async function SetupContent() {
       <h1 className="mt-3 text-3xl font-bold tracking-tight text-slate-900">
         Set up your company
       </h1>
-      <p className="mt-2 mb-6 text-base leading-relaxed text-slate-700">
+      <p className="mt-2 text-base leading-relaxed text-slate-700">
         You&apos;ll be the company admin. Nothing is created until you finish
         this step.
+      </p>
+      <p className="mt-2 mb-6 text-sm leading-6 text-gray-600">
+        Joining an existing company? Don&apos;t fill this in. Ask your admin to
+        send you an invite, then sign up from the link in that email.
       </p>
       <CompanyForm />
     </>
