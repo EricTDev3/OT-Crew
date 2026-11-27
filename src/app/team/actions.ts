@@ -58,10 +58,21 @@ export async function sendInvite(
     return { message: "Couldn't send the invite. Please try again." };
   }
 
-  await prisma.user.update({
-    where: { id: result.user.id },
-    data: { clerkInvitationId: invitation.id },
-  });
+  // The invite is already sent. Accepting it matches on verified email, so a
+  // failed save here is tolerable: log enough to repair the row later (look
+  // the invitation up in Clerk by email, or backfill) and treat it as sent.
+  try {
+    await prisma.user.update({
+      where: { id: result.user.id },
+      data: { clerkInvitationId: invitation.id },
+    });
+  } catch (error) {
+    console.error("Invite sent but clerkInvitationId was not saved", {
+      userId: result.user.id,
+      invitationId: invitation.id,
+      error,
+    });
+  }
 
   revalidatePath("/team");
 
